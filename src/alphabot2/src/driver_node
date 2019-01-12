@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Vector3
+from std_msgs.msg import String
 
 import RPi.GPIO as GPIO
 import time
@@ -75,7 +76,7 @@ class Driver:
 		self._timeout = rospy.get_param('~timeout', 2)
 		self._rate = rospy.get_param('~rate', 10)
 		self._max_speed = rospy.get_param('~max_speed', 0.25)
-		self._wheel_base = rospy.get_param('~wheel_base', 0.091)
+		self._wheel_base = rospy.get_param('~wheel_base', 0.093)
 
 	        # Assign pins to motors. These may be distributed
         	# differently depending on how you've built your robot - guess
@@ -85,8 +86,8 @@ class Driver:
 		self._right_speed_percent = 0
 
 		# Setup subscriber for velocity twist message
-		rospy.Subscriber(
-		'cmd_vel', Twist, self.velocity_received_callback)
+		rospy.Subscriber('cmd_vel', Twist, self.velocity_received_callback)
+		
 
 	def velocity_received_callback(self, message):
         	"""Handle new velocity command message."""
@@ -123,6 +124,7 @@ class Driver:
 	        	# moving
 			delay = rospy.get_time() - self._last_received
 			if delay < self._timeout:
+				print(self._left_speed_percent)
 		      		self._left_motor.move(self._left_speed_percent)
 				self._right_motor.move(self._right_speed_percent)
 			else:
@@ -130,10 +132,20 @@ class Driver:
 				self._right_motor.move(0)
 			rate.sleep()
 
+def collision_callback(collision_message):
+	if(collision_message.data == 'collision_left'):
+		print('Responding to a left hand side collision')	
+		pub = rospy.Publisher('cmd_vel', Twist, queue_size=4)
+		pub.publish(Twist(Vector3(0,0,0),Vector3(0,0,0)))
+
+		#rospy.sleep(10)
+
+
 def main():
 	driver = Driver()
 
-	# Run driver. This will block
+	rospy.Subscriber("collision", String, collision_callback)		
+# Run driver. This will block
 	driver.run()
 
 if __name__ == '__main__':

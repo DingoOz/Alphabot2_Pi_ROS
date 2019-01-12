@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="joy" type="joy_node" name="joystick">
+    <param name="autorepeat_rate" value="1" />
+  </node>
+
+  <node pkg="teleop_twist_joy" type="teleop_node" name="joystick_to_twist">
+    <param name="scale_angular" value="2" />
+  </node>
+</launch>

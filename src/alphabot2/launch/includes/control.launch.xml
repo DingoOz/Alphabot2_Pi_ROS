@@ -1,0 +1,4 @@
+<launch>
+	<node name="driver" pkg="alphabot2" type="driver_node" />
+</launch>
+

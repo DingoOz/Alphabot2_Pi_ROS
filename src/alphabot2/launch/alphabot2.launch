@@ -1,0 +1,5 @@
+<launch>
+	<include file="$(find alphabot2)/launch/includes/teleop.launch.xml" />
+	<include file="$(find alphabot2)/launch/includes/control.launch.xml" />
+</launch>
+
