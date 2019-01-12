@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+import rospy
+from geometry_msgs.msg import Twist
+
+import RPi.GPIO as GPIO
+import time
+
+print('Set up')
+
+
+#Set the GPIO modes
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(12, GPIO.OUT)
+GPIO.setup(13, GPIO.OUT)
+GPIO.setup(20, GPIO.OUT)
+GPIO.setup(21, GPIO.OUT)
+
+GPIO.setup(6, GPIO.OUT)
+GPIO.setup(26, GPIO.OUT)
+
+GPIO.output(6, GPIO.HIGH)
+GPIO.output(26, GPIO.HIGH)
+
+#debug
+print('Start up diagnositics - 1 sec each')
+time.sleep(1)
+print('Forward')
+GPIO.output(12, GPIO.LOW)
+GPIO.output(13, GPIO.HIGH)
+GPIO.output(20, GPIO.LOW)
+GPIO.output(21, GPIO.HIGH)
+
+
+_FREQUENCY = 100
+
+def _clip(value, minimum, maximum):
+	"""Ensure the value is between minimum and maximum."""
+
+	if value < minimum:
+		return minimum
+	elif value > maximum:
+		return maximum
+	return value
+
+class Motor:
+	def __init__(self, forward_pin, backward_pin):
+        	self._forward_pin = forward_pin
+	        self._backward_pin = backward_pin
+
+	        GPIO.setup(forward_pin, GPIO.OUT)
+	        GPIO.setup(backward_pin, GPIO.OUT)
+
+	        self._forward_pwm = GPIO.PWM(forward_pin, _FREQUENCY)
+		self._backward_pwm = GPIO.PWM(backward_pin, _FREQUENCY)
+
+	def move(self, speed_percent):
+		speed = _clip(abs(speed_percent), 0, 100)
+
+		# a positive speed moves wheels forward, negative moves backwards
+		if speed_percent < 0:
+			self._backward_pwm.start(speed)
+			self._forward_pwm.start(0)
+		else:
+			self._forward_pwm.start(speed)
+			self._backward_pwm.start(0)
+
+
+class Driver:
+	def __init__(self):
+        	rospy.init_node('driver')
+
+		self._last_received = rospy.get_time()
+		self._timeout = rospy.get_param('~timeout', 2)
+		self._rate = rospy.get_param('~rate', 10)
+		self._max_speed = rospy.get_param('~max_speed', 0.25)
+		self._wheel_base = rospy.get_param('~wheel_base', 0.091)
+
+	        # Assign pins to motors. These may be distributed
+        	# differently depending on how you've built your robot - guess
+		self._left_motor = Motor(13, 12)
+		self._right_motor = Motor(21, 20)
+		self._left_speed_percent = 0
+		self._right_speed_percent = 0
+
+		# Setup subscriber for velocity twist message
+		rospy.Subscriber(
+		'cmd_vel', Twist, self.velocity_received_callback)
+
+	def velocity_received_callback(self, message):
+        	"""Handle new velocity command message."""
+
+		self._last_received = rospy.get_time()
+
+		# Extract linear and angular velocities from the message
+		linear = message.linear.x
+		angular = message.angular.z
+#		print(linear)
+#		print(angular)
+		# Calculate wheel speeds in m/s
+		left_speed = linear - angular*self._wheel_base/2
+		right_speed = linear + angular*self._wheel_base/2
+
+	        # Ideally we'd now use the desired wheel speeds along
+        	# with data from wheel speed sensors to come up with the
+	        # power we need to apply to the wheels, but we don't have
+        	# wheel speed sensors. Instead, we'll simply convert m/s
+	        # into percent of maximum wheel speed, which gives us a
+        	# duty cycle that we can apply to each motor.
+		self._left_speed_percent = (100 * left_speed/self._max_speed)
+		self._right_speed_percent = (100 * right_speed/self._max_speed)
+
+	def run(self):
+        	"""The control loop of the driver."""
+
+		print('Running...')
+		rate = rospy.Rate(self._rate)
+
+		while not rospy.is_shutdown():
+			# If we haven't received new commands for a while, we
+	        	# may have lost contact with the commander-- stop
+	        	# moving
+			delay = rospy.get_time() - self._last_received
+			if delay < self._timeout:
+		      		self._left_motor.move(self._left_speed_percent)
+				self._right_motor.move(self._right_speed_percent)
+			else:
+				self._left_motor.move(0)
+				self._right_motor.move(0)
+			rate.sleep()
+
+def main():
+	driver = Driver()
+
+	# Run driver. This will block
+	driver.run()
+
+if __name__ == '__main__':
+	main()
