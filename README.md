@@ -34,5 +34,8 @@ If you start with the Raspberry Pi image published by Ubiquity Robitics, you wil
 
 
 
-(TODO - If you want to use a Static IP and not the pifi based script for auto AP)
+TODO - If you want to use a Static IP and not the pifi based script for auto AP)
+
+TODO - Setup TightVNC
+
 

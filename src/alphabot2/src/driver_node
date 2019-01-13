@@ -7,8 +7,7 @@ from std_msgs.msg import String
 import RPi.GPIO as GPIO
 import time
 
-print('Set up')
-
+print('Set up GPIO modes')
 
 #Set the GPIO modes
 GPIO.setmode(GPIO.BCM)
@@ -28,6 +27,8 @@ GPIO.output(26, GPIO.HIGH)
 print('Start up diagnositics - 1 sec each')
 time.sleep(1)
 print('Forward')
+time.sleep(1)
+print('Setting pins for forward')
 GPIO.output(12, GPIO.LOW)
 GPIO.output(13, GPIO.HIGH)
 GPIO.output(20, GPIO.LOW)
@@ -124,13 +125,16 @@ class Driver:
 	        	# moving
 			delay = rospy.get_time() - self._last_received
 			if delay < self._timeout:
+				print('Left Speed:')
 				print(self._left_speed_percent)
 		      		self._left_motor.move(self._left_speed_percent)
 				self._right_motor.move(self._right_speed_percent)
 			else:
 				self._left_motor.move(0)
 				self._right_motor.move(0)
-			rate.sleep()
+#			rate.sleep()
+			print('half second sleep')
+			time.sleep(0.5)
 
 def collision_callback(collision_message):
 	if(collision_message.data == 'collision_left'):
