@@ -34,8 +34,21 @@ If you start with the Raspberry Pi image published by Ubiquity Robitics, you wil
 
 
 
-TODO - If you want to use a Static IP and not the pifi based script for auto AP)
+- TODO - If you want to use a Static IP and not the pifi based script for auto AP)
 
-TODO - Setup TightVNC
+- TODO - Setup TightVNC
+
+
+## TODO - Install
+<WIP: Basically create a package in your ROS workspace called alphabot2, copy this code over and run catkin_make, restart roscore and then use rosrun to start the alphabot2 driver_node >
+
+## Running the code
+There are several ways to run this code.
+
+The first is to use the built in roslaunch file which allows basic control using the any joystick or USB gamepad set up with Linux.
+
+
+
+
 
 
