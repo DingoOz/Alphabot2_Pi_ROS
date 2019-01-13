@@ -24,11 +24,13 @@ Python example code and other documentation
 https://www.waveshare.com/wiki/AlphaBot2-Pi
 
 ## Instructions (Incomplete)
-(Work in Progress)
+*(Work in Progress)*
+
 If you start with the Raspberry Pi image published by Ubiquity Robitics, you will need to alter the /boot/config.txt file. Without a change, the Alphabot2's GPIO will be treated as power and other buttons, causing random network resets and shutdown events when manipulating the GPIO.
 
-Step 1 - Edit /boot/config.txt, commenting out dtoverlay=ubituity-led-buttons by adding a '#' in front on it.
-Step 2 - reboot
+- Step 1: Edit /boot/config.txt, commenting out dtoverlay=ubituity-led-buttons by adding a '#' in front on it.
+
+- Step 2: Reboot
 
 
 
