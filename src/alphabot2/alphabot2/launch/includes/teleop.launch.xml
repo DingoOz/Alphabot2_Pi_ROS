@@ -4,7 +4,13 @@
   </node>
 
   <node pkg="teleop_twist_joy" type="teleop_node" name="joystick_to_twist">
-    <param name="scale_angular" value=".5" />
-    <param name="scale_linear" value="0.1" />
+    <param name="axis_linear" value="1" />
+    <param name="axis_angular" value="0" />
+    <param name="enable_button" value="0" />
+    <param name="scale_angular" value="2.0" />
+    <param name="scale_linear" value="0.5" />
   </node>
+  
+  <!--node pkg="diff_drive_controller" type=""   name="DiffDriveController"-->
+  <!--/node-->
 </launch>
